@@ -18,6 +18,10 @@ import android.widget.Toast;
 
 import com.Emergency.Driver.Models.Locate;
 import com.Emergency.Driver.Models.Patient;
+import com.directions.route.Route;
+import com.directions.route.RouteException;
+import com.directions.route.Routing;
+import com.directions.route.RoutingListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationCallback;
@@ -32,6 +36,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
@@ -44,24 +50,27 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 
 public class SimpleDirectionActivity extends AppCompatActivity implements
         OnMapReadyCallback ,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener
+        GoogleApiClient.OnConnectionFailedListener,
+        RoutingListener
         {
 
     private LocationCallback mLocationCallback;
     int patientUpdateCnt=0,mylocUpdateCnt=0;
-
+    LatLng patientloc,ambcurrloc;
     Location mLastLocation;
     Marker ambCurrLocationMarker;
     Marker currPatientMarker;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
-
+    private static final int[] COLORS = new int[]{R.color.colorPrimaryDark,R.color.colorPrimary,R.color.colorAccent,R.color.colorAccent,R.color.primary_dark_material_light};
+      private List<Polyline> polylines;
 
     private Button btnRequestDirection;
     private GoogleMap googleMap;
@@ -109,7 +118,7 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
 
                     ambLocRef.setValue(new Locate(location.getLatitude(),location.getLongitude()));
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
+                    ambcurrloc=latLng;
                     mLastLocation = location;
                     if (ambCurrLocationMarker != null) {
                    //     Toast.makeText(getApplicationContext(),"my location changed",Toast.LENGTH_SHORT).show();
@@ -180,9 +189,28 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     System.out.println("target patient listener :" + dataSnapshot.toString());
+                    if(polylines!=null) {
+                        polylines.clear();
+                    }
                     if (dataSnapshot.getValue() != null) {
                         TargetPatient = dataSnapshot.getValue().toString();
+
+                        if(ambcurrloc!=null && patientloc!=null){
+                            //  new Fetch_direction_time().execute(AmbLocation.latitude,AmbLocation.longitude,patientInitialLoc.latitude,patientInitialLoc.longitude);
+                            Routing routing = new Routing.Builder()
+                                    .travelMode(Routing.TravelMode.DRIVING)
+                                    .withListener(SimpleDirectionActivity.this)
+                                    .key(serverKey)
+                                    .waypoints(ambcurrloc,patientloc)
+                                    .build();
+                            routing.execute();
+
+                        }
+
+
                     } else {
+                        distance.setText("");
+                        duration.setText("");
                         TargetPatient = null;
                     }
                 }
@@ -200,7 +228,10 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                         Button button = findViewById(R.id.btn_TaskCompInform);
                         button.setClickable(false);
                         button.setText("No Task");
+                        distance.setText("");
+                        duration.setText("");
                         TargetPatient = null;
+
                         targetPatientRef.removeValue();
                     } else if (dataSnapshot.getValue() != null) {
                         System.out.println("patientsref ,listener" + dataSnapshot.toString());
@@ -208,6 +239,7 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                         Button button = findViewById(R.id.btn_TaskCompInform);
                         button.setClickable(true);
                         button.setText("Current Task Completed");
+
                         patientList = new ArrayList<Patient>();
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             Patient p = snapshot.getValue(Patient.class);
@@ -249,7 +281,9 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                                     if (dataSnapshot.getKey().equals(TargetPatient)) {
                                         try {
                                             System.out.println("patient location changed....");
+
                                             Locate location = new Locate(dataSnapshot.getValue(Patient.class).getLatitude(), dataSnapshot.getValue(Patient.class).getLongitude());
+                                            patientloc=new LatLng(dataSnapshot.getValue(Patient.class).getLatitude(), dataSnapshot.getValue(Patient.class).getLongitude());
                                             setPatientMarker(location);
                                             Log.d("on changed listener ,", "Patient location: " + new Gson().toJson(location));
                                         } catch (Exception e) {
@@ -312,6 +346,7 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
 
                 patientUpdateCnt += 1;
                 amblonglat.setText(patientUpdateCnt + " patient:" + location.getLatitude() + "," + location.getLongitude());
+
                 if (currPatientMarker != null) {
                     Toast.makeText(getApplicationContext(), "patient location changed...", Toast.LENGTH_SHORT).show();
                     System.out.println("patient marker already created....");
@@ -450,4 +485,43 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                 });
             }
         }
-  }
+
+            @Override
+            public void onRoutingFailure(RouteException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onRoutingStart() {
+
+            }
+
+            @Override
+            public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
+                System.out.println("found the route :routing success");
+                polylines = new ArrayList<>();
+                //add route(s) to the map.
+                 distance.setVisibility(View.VISIBLE);
+                 duration.setVisibility(View.VISIBLE);
+                distance.setText(route.get(0).getDistanceText());
+                duration.setText(route.get(0).getDurationText());
+                for (int i = 0; i <route.size(); i++) {
+
+                    //In case of more than 5 alternative routes
+                    int colorIndex = i % COLORS.length;
+
+                    PolylineOptions polyOptions = new PolylineOptions();
+                    polyOptions.color(getResources().getColor(COLORS[colorIndex]));
+                    polyOptions.width(10 + i * 3);
+                    polyOptions.addAll(route.get(i).getPoints());
+                    Polyline polyline = googleMap.addPolyline(polyOptions);
+                    polylines.add(polyline);
+
+            //        Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+
+                }
+            }
+            @Override
+            public void onRoutingCancelled() {
+
+            }
+        }
