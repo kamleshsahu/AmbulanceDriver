@@ -17,6 +17,9 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class MainActivity extends AppCompatActivity {
     SignInButton signInButton;
@@ -24,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     static GoogleSignInAccount account=null;
     // Client used to sign in with Google APIs
     private GoogleSignInClient mGoogleSignInClient = null;
-
+    DatabaseReference mUserDatabase;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,8 +82,12 @@ public class MainActivity extends AppCompatActivity {
 
             // Signed in successfully, show authenticated UI.
             //  updateUI(account);
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            mUserDatabase=FirebaseDatabase.getInstance().getReference().child("ambulance");
+            String device_token= FirebaseInstanceId.getInstance().getToken();
 
             if(completedTask.isSuccessful()){
+                mUserDatabase.child("device_token").setValue(device_token);
                 Toast.makeText(getApplicationContext(),"sign in success ",Toast.LENGTH_LONG).show();
                 Intent intent= new Intent(MainActivity.this, SimpleDirectionActivity.class);
                 startActivity(intent);
