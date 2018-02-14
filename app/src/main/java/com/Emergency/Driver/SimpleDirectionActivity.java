@@ -1,11 +1,17 @@
 package com.Emergency.Driver;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -62,6 +68,7 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
         {
 
     private LocationCallback mLocationCallback;
+    boolean doubleBackToExitPressedOnce = false;
     int patientUpdateCnt=0,mylocUpdateCnt=0;
     LatLng patientloc,ambcurrloc;
     Location mLastLocation;
@@ -107,10 +114,46 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
         ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
 
 
+
+        final LocationManager manager = (LocationManager)getApplicationContext().getSystemService    (Context.LOCATION_SERVICE );
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ){
+            AlertDialog alertDialog = new AlertDialog.Builder(
+                    SimpleDirectionActivity.this).create();
+
+            // Setting Dialog Title
+            alertDialog.setTitle("Alert! Turn On GPS");
+
+            // Setting Dialog Message
+            alertDialog.setMessage("Please turn on Location Service to use this app...");
+
+            // Setting Icon to Dialog
+//            alertDialog.setIcon(R.drawable.tick);
+
+            // Setting OK Button
+            alertDialog.setButton("Turn On GPS", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // Write your code here to execute after dialog closed
+                    Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
+                    Intent intent=new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    getApplicationContext().startActivity(intent);
+                }
+            });
+
+            // Showing Alert Message
+            alertDialog.show();
+            alertDialog.setCancelable(false);
+        }
+        else{
+
+        }
+
+
+
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
+                for (final Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     // ...
                     mylocUpdateCnt+=1;
@@ -134,13 +177,23 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                         markerOptions.title("Amb Current Position");
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                         ambCurrLocationMarker = googleMap.addMarker(markerOptions);
-                        googleMap.animateCamera(CameraUpdateFactory.zoomTo(40));
+
+                        //..................................................................................................................................
+                        Button button=findViewById(R.id.zoomin);
+                        button.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
+                            }
+                        });
                     }
+//....................................................................................................................................
 
 
                     googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
-                }
+                }googleMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+
             }
         };
 
@@ -485,7 +538,26 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
                 });
             }
         }
+            //........................................................................................................................
+            @Override
+            public void onBackPressed() {
+                if (doubleBackToExitPressedOnce) {
+                    super.onBackPressed();
+                    return;
+                }
 
+                this.doubleBackToExitPressedOnce = true;
+                Toast.makeText(this, "ALERT! click BACK again to \"Cancel Request\" and \"Exit\"", Toast.LENGTH_SHORT).show();
+
+                new Handler().postDelayed(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        doubleBackToExitPressedOnce=false;
+                    }
+                }, 2000);
+            }
+            //..........................................................................................................................
             @Override
             public void onRoutingFailure(RouteException e) {
                 e.printStackTrace();
@@ -520,6 +592,7 @@ public class SimpleDirectionActivity extends AppCompatActivity implements
             //        Toast.makeText(getApplicationContext(),"Route "+ (i+1) +": distance - "+ route.get(i).getDistanceValue()+": duration - "+
                 }
             }
+
             @Override
             public void onRoutingCancelled() {
 
