@@ -1,69 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
-    tools:context="com.Emergency.Driver.SimpleDirectionActivity">
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/fillform"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        tools:context=".SimpleDirectionActivity">
 
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/amblonglat"
-                android:layout_width="wrap_content"
-                android:text="Long.Lat :"
-                android:layout_margin="10dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent" />
-            <TextView
-                android:id="@+id/distance"
-                android:layout_width="wrap_content"
-                android:text="Distance :"
-                android:layout_margin="10dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent" />
-            <TextView
-                android:layout_margin="10dp"
-                android:id="@+id/duration"
-                android:layout_width="wrap_content"
-                android:text="duration :"
-                android:layout_weight="1"
-                android:layout_height="match_parent" />
-            <TextView
-                android:id="@+id/mylonglat"
-                android:layout_width="wrap_content"
-                android:text="Long.Lat :"
-                android:layout_margin="10dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:id="@+id/upperLayout"
+            android:padding="5dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_alignParentTop="true"
+            android:elevation="10dp"
+            android:layout_margin="5dp"
+            android:background="@drawable/gradient_top">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:id="@+id/planeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:padding="5dp"
+                android:elevation="10dp"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Current Patient:"
+                    android:textStyle="bold"
+                    android:textSize="15dp"
+                    android:textColor="@color/textColorPrimaryInverse"/>
+                <TextView
+                    android:id="@+id/currentUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Patient"
+                    android:textSize="13dp"
+                    android:textColor="@color/textColorPrimaryInverse"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/fillform"
+                android:layout_below="@id/planeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="5dp"
+                android:paddingRight="5dp"
+                android:paddingLeft="5dp"
+                android:orientation="horizontal"
+                android:elevation="10dp"
+                android:visibility="visible">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ambulance:"
+                        android:textStyle="bold"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="15dp"/>
+                    <TextView
+                        android:id="@+id/amblonglat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:text="amblonglat"
+                        android:textSize="13dp"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Distance:"
+                        android:textStyle="bold"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="15dp"/>
+                    <TextView
+                        android:id="@+id/distance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="13dp"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Time:"
+                        android:textStyle="bold"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="15dp"/>
+                    <TextView
+                        android:id="@+id/duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="13dp"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:visibility="gone"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User:"
+                        android:textStyle="bold"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="15dp"/>
+                    <TextView
+                        android:id="@+id/mylonglat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="mylonglat"
+                        android:textColor="@color/textColorPrimaryInverse"
+                        android:textSize="13dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
         </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_below="@+id/fillform"
-        android:layout_height="wrap_content">
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MapsActivity" />
-    </LinearLayout>
-    <Button
-        android:visibility="visible"
-        android:id="@+id/btn_TaskCompInform"
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:id="@+id/bottomButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:paddingBottom="5dp"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            >
+
+            <Button
+                android:id="@+id/btn_TaskCompInform"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Current Case Completed"
+                android:textAllCaps="false"
+                android:onClick="TaskCompInform"
+                android:background="@drawable/red_button"
+                android:layout_margin="5dp"/>
+
+
+            <Button
+                android:id="@+id/btn_Panic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="View Case Queue"
+                android:textAllCaps="false"
+                android:visibility="visible"
+                android:background="@drawable/primary_button"
+                android:layout_margin="5dp"/>
+        </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="TaskCompInform"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="Current Task Completed" />
-</RelativeLayout>
+        android:id="@+id/fab"
+        android:elevation="10dp"
+        android:src="@drawable/ic_my_location"
+        android:layout_gravity="center"
+        app:layout_anchor="@id/upperLayout"
+        app:layout_anchorGravity="bottom|center"
+        />
+</android.support.design.widget.CoordinatorLayout>
